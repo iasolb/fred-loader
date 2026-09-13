@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fred-loader"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python wrapper around the Federal Reserve FRED API that abstracts away series IDs, resampling rules, and macro scoring behind a clean, human-readable interface."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,3 +23,14 @@ dev = ["pytest"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# SHIP THE TYPES (PEP 561). Without py.typed inside the installed package, a
+# type checker and an editor both IGNORE every annotation in this library and
+# treat it as untyped, so autocomplete gives you nothing and mypy reports it as
+# missing stubs. The annotations were already here; nothing told anyone to use
+# them.
+#
+# No .pyi stub files, deliberately: they would restate every signature in a
+# second file that then drifts from the first.
+[tool.setuptools.package-data]
+fred_loader = ["py.typed"]
