@@ -35,6 +35,20 @@ cfg = Config(
 df = pull_fred(cfg)
 ```
 
+## Learning it
+
+Worked notebooks live in
+[research-kit/notebooks](https://github.com/iasolb/research-kit/tree/main/notebooks),
+alongside `census-loader` and `otter`, because the examples worth reading use
+this library with the others rather than on its own.
+
+`01-get-set-up` assumes you have seen pandas once and gets you from nothing to
+a chart of something true. `03-two-sources-one-question` puts FRED and Census
+data in one model and deals with the fact that they disagree about time.
+
+They replaced a demo notebook that showed the library working. These show a
+piece of work, and the library happens to be how it gets done.
+
 ## Project structure
 
 ```
@@ -44,4 +58,5 @@ src/fred_loader/
   load.py           # pull_fred entry point
   series.py         # series catalog: categories and subcategories
   macro_scores.py   # scoring layer: score, available_scores
+  py.typed          # PEP 561: ships the inline annotations to type checkers
 ```
