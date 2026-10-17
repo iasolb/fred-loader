@@ -772,7 +772,7 @@ def score(
     meaningful = [s for s in resolved if s.requires]
     if not meaningful:
         print(
-            "\n⚠  No scores can be computed from the columns present.\n"
+            "\n!  No scores can be computed from the columns present.\n"
             "   Scoring requires series from categories like INFLATION, LABOR,\n"
             "   RATES, or SEP.  Returning raw data unchanged."
         )

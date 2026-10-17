@@ -277,6 +277,27 @@ def test_resample_rule_honoured(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# Test 8b: the summary line names the period the rule actually produced
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "rule, word",
+    [("W-FRI", "weeks"), ("ME", "months"), ("QE", "quarters"), ("YE", "years"), ("2W", "rows")],
+)
+def test_summary_line_names_the_real_period(tmp_path, capsys, rule, word):
+    """It said "weeks" whatever the rule: a monthly pull printed "56 weeks"
+    (2026-10-17)."""
+    cfg = _config(tmp_path, resample_rule=rule)
+    mock_fred = _make_fred_mock(_fake_get_series())
+
+    with patch("fred_loader.utils.Fred", return_value=mock_fred):
+        df = load_fred_master(cfg)
+
+    summary = [ln for ln in capsys.readouterr().out.splitlines() if ln.startswith("Loaded ")]
+    assert summary == [f"Loaded 2 series  |  {len(df)} {word}  |  2 columns"]
+
+
+# ---------------------------------------------------------------------------
 # Test 9: pull_fred end-to-end — writes CSV, returns frame; apply_scores paths
 # ---------------------------------------------------------------------------
 

@@ -38,7 +38,7 @@ Available categories::
 """
 
 import pandas as pd
-from .utils import Config, load_fred_master
+from .utils import Config, _say, load_fred_master
 from .macro_scores import score
 
 # Re-export every category so users only need `from fred_loader import ...`
@@ -139,5 +139,5 @@ def pull_fred(config: Config, apply_scores: bool = False) -> pd.DataFrame | None
     out_file = config.OUTPUT_PATH / config.FILENAME
     output.to_csv(out_file)
 
-    print(f"\nSaved → {out_file}")
+    _say(f"\nSaved -> {out_file}")
     return output

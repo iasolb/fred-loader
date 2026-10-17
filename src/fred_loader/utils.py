@@ -2,10 +2,58 @@ from fredapi import Fred
 import pandas as pd
 import os
 from dotenv import load_dotenv
+from pandas.tseries.frequencies import to_offset
 from pathlib import Path
 from typing import Optional
+import sys
 import time
 from .series import ALL_SERIES, CATEGORIES, SUBCATEGORIES
+
+
+def _say(line: str = "") -> None:
+    """Print one progress line, never raising on the stream's encoding.
+
+    A Windows script whose stdout is piped or redirected writes cp1252, which
+    cannot encode every character an API error, a custom series name or a file
+    path may carry. The line reports on work that already happened, so it
+    degrades to '?' instead of crashing the pull it describes.
+    """
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    print(line.encode(encoding, errors="replace").decode(encoding))
+
+
+# One row of the output stands for one of these, keyed by the offset's class
+# name so the lookup does not depend on how a pandas version spells the alias.
+_PERIOD_WORDS = {
+    "Week": "weeks",
+    "MonthEnd": "months",
+    "MonthBegin": "months",
+    "BusinessMonthEnd": "months",
+    "BusinessMonthBegin": "months",
+    "QuarterEnd": "quarters",
+    "QuarterBegin": "quarters",
+    "YearEnd": "years",
+    "YearBegin": "years",
+    "Day": "days",
+    "BusinessDay": "business days",
+    "Hour": "hours",
+}
+
+
+def _period_word(rule: str) -> str:
+    """Name the period one output row stands for under *rule*, else "rows".
+
+    The summary line said "weeks" whatever the rule, so a monthly pull
+    printed "56 weeks" (2026-10-17). A multiple such as "2W" says "rows",
+    since "weeks" would be wrong by the multiple.
+    """
+    try:
+        offset = to_offset(rule)
+    except ValueError:
+        return "rows"
+    if offset.n != 1:
+        return "rows"
+    return _PERIOD_WORDS.get(type(offset).__name__, "rows")
 
 
 # ╔═══════════════════════════════════════════════════════════════════════════╗
@@ -108,19 +156,30 @@ def available(category: str | None = None) -> None:
     print()
 
 
+def _words(text: str) -> list[str]:
+    """Lowercase words of *text*, with underscores read as spaces.
+
+    Friendly names are underscore_joined (``Headline_CPI``), so a reader
+    typing "headline cpi" has to land on them.
+    """
+    return text.lower().replace("_", " ").split()
+
+
 def search(keyword: str) -> list[str]:
     """Search the catalog by keyword, case-insensitive.
 
     Matches the FRED series id AND the friendly name, so both
-    `search("CPIAUCSL")` and `search("inflation")` work.
+    `search("CPIAUCSL")` and `search("inflation")` work. Spaces and
+    underscores are the same thing, and a multi-word query matches only
+    series carrying every word, so `search("headline cpi")` works too.
 
     Returns the list of matching series ids.
     """
-    kw = keyword.lower()
+    words = _words(keyword)
     hits = [
         series_id
         for series_id, (name, _freq) in ALL_SERIES.items()
-        if kw in series_id.lower() or kw in name.lower()
+        if all(w in " ".join(_words(f"{series_id} {name}")) for w in words)
     ]
 
     if not hits:
@@ -277,11 +336,11 @@ def load_fred_master(config: Config) -> pd.DataFrame:
 
                 frames[name] = s
                 agg = "mean" if native_freq in config.MEAN_FREQS else "last"
-                print(f"  ✓ {name:<40s} ({series_id:<18s} {native_freq} → {agg})")
+                _say(f"  ok   {name:<40s} ({series_id:<18s} {native_freq} -> {agg})")
                 time.sleep(0.5)  # be nice to the API
             except Exception as e:
                 failed.append((series_id, name, str(e)))
-                print(f"  ✗ {name:<40s} ({series_id}) — {e}")
+                _say(f"  FAIL {name:<40s} ({series_id}): {e}")
                 time.sleep(0.5)  # be nice to the API
 
         df = pd.DataFrame(frames)
@@ -289,12 +348,13 @@ def load_fred_master(config: Config) -> pd.DataFrame:
         df.index.name = "date"
 
         if failed:
-            print(f"\n⚠  {len(failed)} series failed:")
+            _say(f"\n!  {len(failed)} series failed:")
             for sid, nm, err in failed:
-                print(f"    {nm} ({sid}): {err}")
+                _say(f"    {nm} ({sid}): {err}")
 
-        print(
-            f"\nLoaded {len(frames)} series  |  {df.shape[0]} weeks  |  {df.columns.size} columns"
+        period = _period_word(config.RESAMPLE_RULE)
+        _say(
+            f"\nLoaded {len(frames)} series  |  {df.shape[0]} {period}  |  {df.columns.size} columns"
         )
         return df
 

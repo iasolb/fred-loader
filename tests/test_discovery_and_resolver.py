@@ -141,6 +141,25 @@ def test_search_returns_empty_and_says_so_when_nothing_matches(capsys):
     assert "No series matching" in capsys.readouterr().out
 
 
+def test_search_reads_spaces_as_underscores(capsys):
+    """Friendly names are underscore_joined, so the words a reader types must
+    still find them: "headline cpi" returned nothing until 2026-10-17."""
+    hits = search("headline cpi")
+    capsys.readouterr()
+    assert "CPIAUCSL" in hits
+
+
+def test_search_with_several_words_needs_every_word_in_any_order(capsys):
+    hits = search("cpi headline")
+    narrower_than = search("cpi")
+    capsys.readouterr()
+    assert "CPIAUCSL" in hits
+    for series_id in hits:
+        words = f"{series_id} {ALL_SERIES[series_id][0]}".lower().replace("_", " ")
+        assert "cpi" in words and "headline" in words
+    assert set(hits) < set(narrower_than)
+
+
 def test_info_reports_the_series_with_its_frequency_and_lineage(capsys):
     info("CPIAUCSL")
     out = capsys.readouterr().out
