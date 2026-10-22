@@ -7,6 +7,7 @@ Readable names for FRED economic data series, returned as pandas DataFrames.
 [![Tests](https://github.com/iasolb/fred-loader/actions/workflows/tests.yml/badge.svg)](https://github.com/iasolb/fred-loader/actions/workflows/tests.yml)
 
 ## Features
+
 - Retrieve multiple FRED series in a single pull and align to a common frequency
 - Optional macro scoring layer that derives scores and indicators
 - Built in catalog of categories and subcategories for easy discovery
@@ -15,12 +16,22 @@ Readable names for FRED economic data series, returned as pandas DataFrames.
 - Typed interfaces and helpful error messages
 
 ## Installation
-- pip install fred-loader
+
+```
+pip install fred-loader
+```
 
 ### API key
-- The FRED API key is read from the environment variable FRED_API_KEY.
-- Alternatively, place a .env file in the project root with the line:
-  FRED_API_KEY=YOUR_API_KEY
+
+```
+export FRED_API_KEY=YOUR_API_KEY
+```
+
+Alternatively, place a .env file in the project root with the line:
+
+```
+FRED_API_KEY=YOUR_API_KEY
+```
 
 ## Quick start
 ```python
@@ -59,10 +70,17 @@ src/fred_loader/
   py.typed          # PEP 561: ships the inline annotations to type checkers
 ```
 
+## Documentation
+
+Worked notebooks are available at https://github.com/iasolb/research-kit/tree/main/notebooks.
+
 ## Contributing
-- pip install -e ".[dev]"
-- pytest
+
+```
+pip install -e ".[dev]"
+pytest
+```
 
 ## License
-- MIT
-- See LICENSE for details.
+
+https://github.com/iasolb/fred-loader/blob/main/LICENSE
