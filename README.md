@@ -1,20 +1,28 @@
-# FRED_Loader
+# fred-loader
+Readable names for FRED economic data series, returned as pandas DataFrames.
 
-A Python wrapper around the Federal Reserve FRED API that abstracts away
-series IDs, resampling rules, and macro scoring behind a clean,
-human-readable interface. Installs as `fred-loader`, for anyone who pulls
-macroeconomic data into pandas.
+[![PyPI version](https://img.shields.io/pypi/v/fred-loader)](https://pypi.org/project/fred-loader/)
+[![Python versions](https://img.shields.io/pypi/pyversions/fred-loader)](https://pypi.org/project/fred-loader/)
+[![MIT License](https://img.shields.io/pypi/l/fred-loader)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/iasolb/fred-loader/actions/workflows/tests.yml/badge.svg)](https://github.com/iasolb/fred-loader/actions/workflows/tests.yml)
 
-## Install
+## Features
+- Retrieve multiple FRED series in a single pull and align to a common frequency
+- Optional macro scoring layer that derives scores and indicators
+- Built in catalog of categories and subcategories for easy discovery
+- Simple API surface: pull_fred, Config, and exported series
+- Output a single CSV per run for reproducibility
+- Typed interfaces and helpful error messages
 
-```bash
-pip install fred-loader
-```
+## Installation
+- pip install fred-loader
 
-Or from a checkout of this repository: `pip install -e .`.
+### API key
+- The FRED API key is read from the environment variable FRED_API_KEY.
+- Alternatively, place a .env file in the project root with the line:
+  FRED_API_KEY=YOUR_API_KEY
 
-## Quickstart
-
+## Quick start
 ```python
 from fred_loader import Config, pull_fred
 
@@ -23,7 +31,6 @@ df = pull_fred(cfg)
 ```
 
 Cherry-pick series categories:
-
 ```python
 from fred_loader import INFLATION, LABOR, RATES, Config, pull_fred
 
@@ -35,22 +42,13 @@ cfg = Config(
 df = pull_fred(cfg)
 ```
 
-## Learning it
-
-Worked notebooks live in
-[research-kit/notebooks](https://github.com/iasolb/research-kit/tree/main/notebooks),
-alongside `census-loader` and `otter`, because the examples worth reading use
-this library with the others rather than on its own.
-
-`01-get-set-up` assumes you have seen pandas once and gets you from nothing to
-a chart of something true. `03-two-sources-one-question` puts FRED and Census
-data in one model and deals with the fact that they disagree about time.
-
-They replaced a demo notebook that showed the library working. These show a
-piece of work, and the library happens to be how it gets done.
+## Usage
+- The library exposes a catalog of categories and subcategories via module exports.
+- Central entry point is pull_fred(config, apply_scores=False) which returns a pandas DataFrame.
+- The Config object controls the output path, start date, resampling rule, and which series to include.
+- The internal catalog (ALL_SERIES, CATEGORIES, SUBCATEGORIES) can be browsed via available(), search(), and info() helpers.
 
 ## Project structure
-
 ```
 src/fred_loader/
   __init__.py       # public API re-exports
@@ -60,3 +58,11 @@ src/fred_loader/
   macro_scores.py   # scoring layer: score, available_scores
   py.typed          # PEP 561: ships the inline annotations to type checkers
 ```
+
+## Contributing
+- pip install -e ".[dev]"
+- pytest
+
+## License
+- MIT
+- See LICENSE for details.
